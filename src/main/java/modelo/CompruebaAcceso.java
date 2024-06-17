@@ -8,29 +8,37 @@ import java.sql.SQLException;
 import controlador.Controlador;
 import vista.LoginView;
 
-public class CompruebaAcceso {
+public class CompruebaAcceso implements Runnable {
+	private LoginView loginView;
+	private boolean accesoPermitido;
 
-	public static void validarCredenciales(LoginView loginView) {
-		Connection connection = Conexion.conectarABaseDeDatos();
+	public CompruebaAcceso(LoginView loginView) {
+		this.loginView = loginView;
+	}
+
+	@Override
+	public void run() {
+		Connection connection = Conexion.getConnection();
 		Controlador controlador = new Controlador();
 		String username = loginView.getUsernameField();
 		char[] password = loginView.getPasswordFieldValue();
-		//System.out.println("Sout desde conexion " + username + " " + new String(password));
 
-		if (verificarCredenciales(connection, username, password)) {
-			System.out.println("Credenciales correctas. Accediendo a la siguiente vista...");
+		accesoPermitido = verificarCredenciales(connection, username, password);
 
-			// Llamar al controlador para cambiar a la siguiente vista
+		if (accesoPermitido) {
+			System.out.println("Credenciales correctas. Accediendo a la siguiente vista...Desde hilo CompruebaAcceso");
 			controlador.mostrarVistaprincipal();
 			loginView.setVisible(false);
 		} else {
-			System.out.println("Credenciales incorrectas. No se puede acceder a la siguiente vista.");
-
+			System.out.println("Credenciales incorrectas. No se puede acceder a la siguiente vista. Thread WORKS!");
 		}
-
 	}
 
-	public static boolean verificarCredenciales(Connection connection, String username, char[] password) {
+	public boolean isAccesoPermitido() {
+		return accesoPermitido;
+	}
+
+	private boolean verificarCredenciales(Connection connection, String username, char[] password) {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 
@@ -41,13 +49,10 @@ public class CompruebaAcceso {
 			statement.setString(2, new String(password));
 
 			resultSet = statement.executeQuery();
-			// System.out.println(resultSet);
 
 			return resultSet.next();
-
 		} catch (SQLException e) {
 			e.printStackTrace();
-			// Manejar errores de consulta SQL
 		} finally {
 			try {
 				if (resultSet != null) {
@@ -64,4 +69,14 @@ public class CompruebaAcceso {
 		return false;
 	}
 
+	public static void validarCredenciales(LoginView loginView) {
+		CompruebaAcceso accesoRunnable = new CompruebaAcceso(loginView);
+		Thread accesoThread = new Thread(accesoRunnable);
+		accesoThread.start();
+		try {
+			accesoThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 }

@@ -28,7 +28,6 @@ public class VentanaClientes extends JFrame {
     private ExportClientes modeloExport2;
     private ExportPedidos modeloExport3;
 
-
     public VentanaClientes() {
         InsertJuegos insertjuegos = null;
         LoginView loginview = null;
@@ -37,9 +36,8 @@ public class VentanaClientes extends JFrame {
         VentanaprincipalApp ventanaPrincipal = null;
         VentanaStock ventanastock = null;
         VentanaPedido ventanaPedido = null;
-        modeloExport2 = new ExportClientes(); 
         controlador = new Controlador(insertjuegos, loginview, compruebaacceso, conexion, 
-        		ventanaPrincipal, ventanastock, this, ventanaPedido, modeloExport, modeloExport2, modeloExport3);
+                ventanaPrincipal, ventanastock, this, ventanaPedido, modeloExport, modeloExport2, modeloExport3);
 
         // Configuración de la ventana y otros componentes
         setTitle("Clientes");
@@ -161,7 +159,10 @@ public class VentanaClientes extends JFrame {
         exportButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                controlador.goToExport2();
+                TableModel tableModel = obtenerTableModel();
+                ExportClientes exportClientes = new ExportClientes(tableModel);
+                Thread exportThread = new Thread(exportClientes);
+                exportThread.start();
             }
         });
 
@@ -211,3 +212,4 @@ public class VentanaClientes extends JFrame {
         }
     }
 }
+

@@ -6,11 +6,21 @@ import javax.swing.table.TableModel;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class ExportClientes {
+public class ExportClientes implements Runnable {
+	private TableModel tableModel;
+
+	public ExportClientes(TableModel tableModel) {
+		this.tableModel = tableModel;
+	}
+
+	@Override
+	public void run() {
+		exportarAExcel(tableModel);
+	}
 
 	public void exportarAExcel(TableModel tableModel) {
 		Workbook workbook = new XSSFWorkbook();
-		Sheet sheet = workbook.createSheet("Datos de clientes exportados");
+		Sheet sheet = workbook.createSheet("Datos de clientes exportados desde el hilo RUN");
 
 		// Crear la fila de encabezado
 		Row headerRow = sheet.createRow(0);
@@ -38,7 +48,7 @@ public class ExportClientes {
 		}
 
 		// Escribir el archivo
-		try (FileOutputStream out = new FileOutputStream("datos_exportados2.xlsx")) {
+		try (FileOutputStream out = new FileOutputStream("datos_exportados_Clientes.xlsx")) {
 			workbook.write(out);
 			System.out.println("Excel exportado con éxito.");
 		} catch (IOException e) {
