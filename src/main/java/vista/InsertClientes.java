@@ -110,7 +110,8 @@ public class InsertClientes extends JFrame {
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                aniadircliente();
+                // Crear un nuevo hilo para añadir el cliente
+                new Thread(() -> aniadircliente()).start();
             }
         });
         panel.add(addButton, gbc);
@@ -141,13 +142,17 @@ public class InsertClientes extends JFrame {
             statement.setString(6, email);
 
             int filasAfectadas = statement.executeUpdate();
-            if (filasAfectadas > 0) {
-                JOptionPane.showMessageDialog(this, "Se ha añadido el cliente correctamente.");
-            } else {
-                JOptionPane.showMessageDialog(this, "No se pudo añadir el cliente.");
-            }
+            SwingUtilities.invokeLater(() -> {
+                if (filasAfectadas > 0) {
+                    JOptionPane.showMessageDialog(this, "Se ha añadido el cliente correctamente.");
+                } else {
+                    JOptionPane.showMessageDialog(this, "No se pudo añadir el cliente.");
+                }
+            });
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Error al añadir el cliente: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            SwingUtilities.invokeLater(() -> {
+                JOptionPane.showMessageDialog(this, "Error al añadir el cliente: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            });
         }
     }
 
